@@ -105,7 +105,7 @@ public class PartLocalServiceImpl extends PartLocalServiceBaseImpl {
 	 */
 	public List<Part> getPartsByGroupId(long groupId) throws SystemException {
 
-		return partPersistence.findByGroupId(groupId);
+		return partPersistence.filterFindByGroupId(groupId);
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class PartLocalServiceImpl extends PartLocalServiceBaseImpl {
 	 */
 	public List<Part> getPartsByGroupId(long groupId, int start, int end) throws SystemException {
 
-		return partPersistence.findByGroupId(groupId, start, end);
+		return partPersistence.filterFindByGroupId(groupId, start, end);
 	}
 
 	/**
@@ -123,7 +123,7 @@ public class PartLocalServiceImpl extends PartLocalServiceBaseImpl {
 	 */
 	public int getPartsCountByGroupId(long groupId) throws SystemException {
 
-		return partPersistence.countByGroupId(groupId);
+		return partPersistence.filterCountByGroupId(groupId);
 	}
 
 	/**
