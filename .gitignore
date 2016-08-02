@@ -45,4 +45,5 @@
 /tools/*/*/*/lib
 /tools/node*
 _sass_cache_*.css
+*.class
 
