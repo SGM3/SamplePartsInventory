@@ -37,6 +37,10 @@
 <%@ page import="com.liferay.training.parts.service.permission.ManufacturerPermission"%>
 <%@ page import="com.liferay.training.parts.service.permission.PartPermission"%>
 
+<%@ page import="com.liferay.portlet.portletdisplaytemplate.util.PortletDisplayTemplateUtil" %>
+<%@ page import="com.liferay.training.template.PartsPortletDisplayTemplateUtil" %>
+		
+
 <liferay-theme:defineObjects />
 
 <portlet:defineObjects />

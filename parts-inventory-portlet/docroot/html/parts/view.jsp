@@ -1,4 +1,3 @@
-
 <%--
 /**
 * Copyright (c) 2000-2010 Liferay, Inc. All rights reserved.
@@ -15,21 +14,27 @@
 */
 --%>
 
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
-
-<portlet:defineObjects />
-
 <%@include file="/html/init.jsp"%>
+
+<style>
+.part {
+	border-style: solid;
+    border-width: 1px;
+	font-size: 1.2em;
+	padding: 5px;
+	margin: 10px;
+}
+</style>
 
 <%
 String redirect = PortalUtil.getCurrentURL(renderRequest);
 
-
-	boolean hasAddPermission = InventoryPermission.contains(
-			permissionChecker, scopeGroupId, "ADD_PART");
-	boolean hasConfigurePermission = InventoryPermission.contains(
-			permissionChecker, scopeGroupId, ActionKeys.PERMISSIONS);
-		
+	boolean hasAddPermission = permissionChecker.hasPermission(
+			scopeGroupId, "com.liferay.training.parts.model",
+			scopeGroupId, "ADD_PART");
+	boolean hasConfigurePermission = permissionChecker.hasPermission(
+			scopeGroupId, "com.liferay.training.parts.model", scopeGroupId,
+			ActionKeys.PERMISSIONS);
 %>
 
 <liferay-ui:success key="part-added" message="part-added-successfully" />
@@ -51,7 +56,7 @@ String redirect = PortalUtil.getCurrentURL(renderRequest);
 	<c:if test='<%= hasConfigurePermission %>'>
 		<liferay-security:permissionsURL
 			modelResource="com.liferay.training.parts.model"
-			modelResourceDescription="Parts Inventory Top Level Actions"
+			modelResourceDescription="parts-top-level-actions"
 			resourcePrimKey="<%= String.valueOf(scopeGroupId) %>"
 			var="permissionsURL" />
 
@@ -59,48 +64,64 @@ String redirect = PortalUtil.getCurrentURL(renderRequest);
 	</c:if>
 </aui:button-row>
 
-<liferay-ui:search-container
-	emptyResultsMessage="part-empty-results-message">
-	<liferay-ui:search-container-results
-		results="<%= PartLocalServiceUtil.getPartsByGroupId(scopeGroupId, searchContainer.getStart(), searchContainer.getEnd()) %>"
-		total="<%= PartLocalServiceUtil.getPartsCountByGroupId(scopeGroupId) %>" />
+<%
+String displayStyle = GetterUtil.getString(portletPreferences.getValue("displayStyle", StringPool.BLANK));
+long displayStyleGroupId = GetterUtil.getLong(portletPreferences.getValue("displayStyleGroupId", null), scopeGroupId);
+long portletDisplayDDMTemplateId = PortletDisplayTemplateUtil.getPortletDisplayTemplateDDMTemplateId(displayStyleGroupId, displayStyle);
+%>
 
-	<liferay-ui:search-container-row
-		className="com.liferay.training.parts.model.Part" keyProperty="partId"
-		modelVar="part" escapedModel="<%= true %>">
-		<liferay-ui:search-container-column-text name="name"
-			value="<%= part.getName(locale) %>" />
+<c:choose>
+    <c:when test="<%= portletDisplayDDMTemplateId > 0 %>">
+    	<%
+    	List<Part> parts = PartLocalServiceUtil.getPartsByGroupId(scopeGroupId);
+    	
+    	Map<String, Object> contextObjects = new HashMap<String, Object>();
+    	
+    	PartsPortletDisplayTemplateUtil partsPortletDisplayTemplateUtil = new PartsPortletDisplayTemplateUtil();
 
-		<liferay-ui:search-container-column-text name="part-number"
-			property="partNumber" />
+		contextObjects.put("partsPortletDisplayTemplateUtil", partsPortletDisplayTemplateUtil);
+    	%>
 
-		<liferay-ui:search-container-column-text name="quantity"
-			property="quantity" />
-
-		<liferay-ui:search-container-column-text name="order-date"
-			value="<%= new SimpleDateFormat(\"MMMM dd, yyyy\").format(part.getOrderDate()) %>" />
-
-		<%
-			String manufacturerName = "";
-
+        <%= PortletDisplayTemplateUtil.renderDDMTemplate(pageContext, portletDisplayDDMTemplateId, parts, contextObjects) %>
+	</c:when>
+    <c:otherwise>
+		<liferay-ui:search-container emptyResultsMessage="part-empty-results-message">
+		<liferay-ui:search-container-results
+			results="<%= PartLocalServiceUtil.getPartsByGroupId(scopeGroupId, searchContainer.getStart(), searchContainer.getEnd()) %>"
+			total="<%= PartLocalServiceUtil.getPartsCountByGroupId(scopeGroupId) %>" />
+	
+			<liferay-ui:search-container-row
+				className="com.liferay.training.parts.model.Part" keyProperty="partId"
+				modelVar="part" escapedModel="<%= true %>">
+				<liferay-ui:search-container-column-text name="name"
+					value="<%= part.getName(locale) %>" />
+		
+				<liferay-ui:search-container-column-text name="part-number"
+					property="partNumber" />
+		
+				<liferay-ui:search-container-column-text name="quantity"
+					property="quantity" />
+		
+				<liferay-ui:search-container-column-text name="order-date"
+					value="<%= new SimpleDateFormat(\"MMMM dd, yyyy\").format(part.getOrderDate()) %>" />
+		
+				<%
+					String manufacturerName = "";
 					try {
 						manufacturerName = HtmlUtil.escape(ManufacturerLocalServiceUtil
-								.getManufacturer(part.getManufacturerId())
-								.getName());
-					} catch (PortalException pe) {
-						System.err.println(pe.getLocalizedMessage());
-					} catch (SystemException se) {
-						System.err.println(se.getLocalizedMessage());
+							.getManufacturer(part.getManufacturerId()).getName());
+					} catch (Exception ex) {
 					}
-		%>
+				%>
+		
+				<liferay-ui:search-container-column-text name="manufacturer"
+					value="<%= manufacturerName %>" />
+		
+				<liferay-ui:search-container-column-jsp align="right"
+					path="/html/parts/part_actions.jsp" />
+			</liferay-ui:search-container-row>
 
-		<liferay-ui:search-container-column-text name="manufacturer"
-			value="<%= manufacturerName %>" />
-
-		<liferay-ui:search-container-column-jsp align="right"
-			path="/html/parts/part_actions.jsp" />
-	</liferay-ui:search-container-row>
-
-	<liferay-ui:search-iterator />
-</liferay-ui:search-container>
-
+			<liferay-ui:search-iterator />
+		</liferay-ui:search-container>
+	</c:otherwise>
+</c:choose>

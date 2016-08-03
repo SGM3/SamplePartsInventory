@@ -43,6 +43,10 @@
 			com.liferay.training.parts.portlet.PartsPortlet
 		</portlet-class>
 		<init-param>
+			<name>config-template</name>
+			<value>/html/parts/configuration.jsp</value>
+		</init-param>
+		<init-param>
 			<name>view-template</name>
 			<value>/html/parts/view.jsp</value>
 		</init-param>
